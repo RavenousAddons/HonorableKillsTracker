@@ -1,0 +1,16 @@
+## Interface: 110002
+## Version: 1.0.0
+
+## Name: Honorable Kills Tracker
+## Title: Honorable Kills Tracker
+## Notes: Keep track of your Honorable Kills and achievement progress.|n|n|cffbbbbbbSlash command: /hkt|r
+## Author: RavenousAddons
+## IconAtlas: BattleMaster
+
+## SavedVariables: HKT_version
+## SavedVariablesPerCharacter: HKT_data, HKT_options
+
+## X-License: Public Domain
+## X-Website: https://github.com/RavenousAddons/HonorableKillsTracker
+
+HonorableKillsTracker.xml
