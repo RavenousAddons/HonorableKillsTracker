@@ -22,18 +22,31 @@ L.Install = "Thanks for installing version |cff%1$s%2$s|r!" -- ns.color, ns.vers
 L.Update = "Thanks for updating to version |cff%1$s%2$s|r!" -- ns.color, ns.version
 L.AddonCompartmentTooltip1 = "|cff" .. ns.color .. "Left-Click:|r Check Honorable Kills"
 L.AddonCompartmentTooltip2 = "|cff" .. ns.color .. "Right-Click:|r Open Settings"
-L.OptionsTitle = "Options:"
-L.Options = {
+L.OptionsTitle1 = "General options:"
+L.OptionsGeneral = {
     [1] = {
+        key = "characterSpecific",
+        name = "Character-specific alerts",
+        tooltip = "Instead of displaying alerts for Honorable Kills progress across your Warband, display Character-specific Honorable Kills.",
+    },
+    [2] = {
         key = "trackAchievements",
         name = "Track Achievements",
         tooltip = "Track progress on the various achievements for increasing numbers of Honorable Kills across your Warband.",
     },
-    [2] = {
-        key = "characterSpecific",
-        name = "Character-specific tracking",
-        tooltip = "Instead of tracking Honorable Kills across your Warband, track Character-specific Honorable Kills,",
+}
+L.OptionsTitle2 = "How often do you want to see your progress?"
+L.OptionsStats = {
+    [1] = {
+        key = "displayOnLogin",
+        name = "Display stats on login",
+        tooltip = "Prints your honorable kills stats in the chat box when you log in.",
     },
+}
+L.OptionsDivision = {
+    key = "displayDivision",
+    name = "Display stats every...",
+    tooltip = "TODO",
 }
 
 -- Check locale and apply appropriate changes below

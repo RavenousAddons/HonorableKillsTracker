@@ -9,7 +9,7 @@ local CT = C_Timer
 
 function HonorableKillTracker_OnLoad(self)
     self:RegisterEvent("PLAYER_LOGIN")
-    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+    self:RegisterEvent("CRITERIA_UPDATE")
 end
 
 -- Event Triggers
@@ -25,12 +25,11 @@ function HonorableKillTracker_OnEvent(self, event, arg, ...)
             -- Version-specific messages go here...
         end
         HKT_version = ns.version
-        ns:Alert()
-    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        local timestamp, subEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags = CombatLogGetCurrentEventInfo()
-        if subEvent == "PARTY_KILL" and sourceGUID == characterID then
-            ns:Alert()
+        if ns:OptionValue("displayOnLogin") then
+            ns:Alert(true)
         end
+    elseif event == "CRITERIA_UPDATE" then
+        ns:Alert()
     end
 end
 

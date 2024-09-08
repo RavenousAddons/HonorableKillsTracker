@@ -2,10 +2,23 @@ local _, ns = ...
 
 ns.data = {
     defaults = {
-        trackAchievements = true,
         characterSpecific = false,
+        displayDivision = 2,
+        displayOnLogin = true,
+        trackAchievements = true,
+    },
+    divisions = {
+        [1] = 1,
+        [2] = 10,
+        [3] = 25,
+        [4] = 50,
+        [5] = 100,
+        [6] = 250,
+        [7] = 500,
+        [8] = 1000,
     },
     achievements = {
+        [1] = 238,
         [100] = 513,
         [500] = 515,
         [1000] = 516,

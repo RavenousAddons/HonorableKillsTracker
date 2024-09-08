@@ -55,47 +55,31 @@ local function HighestAchievementID()
     return tonumber(achievements[HighestAchievementIndex()])
 end
 
-local function CharacterHKs()
-    local value = GetStatistic(ns.data.statistic)
-    return tonumber(value)
-end
-
-local function WarbandHKs()
-    local value = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1)):match('%d+')
-    return tonumber(value)
-end
-
-local function CurrentAchievementIndex()
-    local count = WarbandHKs()
+local function CurrentAchievementIndex(warbandHKs)
     local max = HighestAchievementIndex()
-    if count >= max then
-        print("max", max)
+    if warbandHKs >= max then
         return max
     end
 
     local index
     for total, _ in pairs(achievements) do
-        if count < total and total < (index or max) then
+        if warbandHKs < total and total < (index or max) then
             index = total
         end
     end
     return index and tonumber(index) or nil
 end
 
-local function CurrentAchievementID()
-    return tonumber(achievements[CurrentAchievementIndex()])
+local function CurrentAchievementID(warbandHKs)
+    return tonumber(achievements[CurrentAchievementIndex(warbandHKs)])
 end
 
-local function AchievementLink()
-    return "|cffffffaa|Hachievement:" .. CurrentAchievementID() .. ":" .. characterID .. ":0:0:0:0:0:0:0:0|h[" .. L.HKs:format(CurrentAchievementIndex()) .. "]|h|r"
+local function AchievementLink(warbandHKs)
+    return "|cffffffaa|Hachievement:" .. CurrentAchievementID(warbandHKs) .. ":" .. characterID .. ":0:0:0:0:0:0:0:0|h[" .. L.HKs:format(CurrentAchievementIndex(warbandHKs)) .. "]|h|r"
 end
 
-local function ShouldTrackCharacterSpecific()
-    return WarbandHKs() > HighestAchievementIndex() or ns:OptionValue("characterSpecific")
-end
-
-local function HKs()
-    return ShouldTrackCharacterSpecific() and CharacterHKs() or WarbandHKs()
+local function ShouldTrackCharacterSpecific(warbandHKs)
+    return ns:OptionValue("characterSpecific") or warbandHKs > HighestAchievementIndex()
 end
 
 local function GetChangeIndex(old, new)
@@ -121,17 +105,42 @@ local function FormatChange(old, new)
     return left .. "|cff44ff44" .. right .. "|r"
 end
 
-local function PrintStats(honorableKills)
-    local characterSpecific = ShouldTrackCharacterSpecific()
-    local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
-    local trackingType = characterSpecific and characterFormatted or warbandFormatted
+local function CharacterHKs()
+    local value = GetStatistic(ns.data.statistic)
+    return value and tonumber(value) or 0
+end
+
+local function WarbandHKs()
+    local value = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1)):match('%d+')
+    return tonumber(value)
+end
+
+local function PrintStats(trackingType, key, honorableKills)
     print(L.HKs:format(trackingType) .. ": " .. FormatChange(FormatWithCommas(HKT_data[key] or "0"), FormatWithCommas(honorableKills)))
-    local warbandHKs = WarbandHKs()
-    local remaining = CurrentAchievementIndex() - warbandHKs
-    if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
-        print(AchievementLink() .. " " .. L.Remaining:format(FormatChange(FormatWithCommas(HKT_data.remaining or "0"), FormatWithCommas(remaining))))
+end
+
+local function DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
+    -- Print stats based on character-specific parameter
+    local trackingType = characterSpecific and characterFormatted or warbandFormatted
+    local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
+    local honorableKills = characterSpecific and characterHKs or warbandHKs
+    PrintStats(trackingType, key, honorableKills)
+
+    -- Print stats based on opposite of character-specific parameter
+    if force then
+        trackingType = characterSpecific and warbandFormatted or characterFormatted
+        key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
+        honorableKills = characterSpecific and warbandHKs or characterHKs
+        PrintStats(trackingType, key, honorableKills)
     end
-    HKT_data[key] = honorableKills
+
+    local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
+    if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
+        print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatChange(FormatWithCommas(HKT_data.remaining or "0"), FormatWithCommas(remaining))))
+    end
+
+    HKT_data.honorableKills = warbandHKs
+    HKT_data.honorableKillsCharacter = characterHKs
     HKT_data.remaining = remaining
 end
 
@@ -166,8 +175,10 @@ function ns:OpenSettings()
 end
 
 function ns:Alert(force)
-    local honorableKills = HKs()
-    if force or not math.fmod(honorableKills, 10) then
-        PrintStats(honorableKills)
+    local characterHKs = CharacterHKs()
+    local warbandHKs = WarbandHKs()
+    local characterSpecific = ShouldTrackCharacterSpecific(warbandHKs)
+    if force or not math.fmod(characterSpecific and characterHKs or warbandHKs, ns:OptionValue("displayDivision")) then
+        DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
     end
 end
