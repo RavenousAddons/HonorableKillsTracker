@@ -30,10 +30,11 @@ local function RegisterDefaultOption(option, default)
     end
 end
 
-local function FormatWithCommas(number)
+local function FormatNumber(number)
+    local delineateCharacter = ns:OptionValue("delineateCharacter") == 2 and "." or ","
     local formatted = tostring(number)
     while true do
-        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
+        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1" .. delineateCharacter .. "%2")
         if k == 0 then
             break
         end
@@ -142,7 +143,7 @@ local function WarbandHKs()
 end
 
 local function PrintStats(trackingType, key, honorableKills)
-    print(L.HKs:format(trackingType) .. ": " .. FormatChange(FormatWithCommas(HKT_data[key] or "0"), FormatWithCommas(honorableKills)))
+    print(L.HKs:format(trackingType) .. ": " .. FormatChange(FormatNumber(HKT_data[key] or "0"), FormatNumber(honorableKills)))
 end
 
 local function EqualDivision(characterHKs, warbandHKs, characterSpecific)
@@ -176,7 +177,7 @@ local function DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
 
         local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
         if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
-            print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatWithCommas(HKT_data.remaining or "0")))
+            print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatNumber(HKT_data.remaining or "0")))
         end
 
         HKT_data.remaining = remaining

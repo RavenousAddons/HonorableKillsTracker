@@ -21,26 +21,34 @@ function ns:CreateSettingsPanel()
 
     for index = 1, #L.OptionsGeneral do
         local option = L.OptionsGeneral[index]
-        CreateCheckBox(category, option.key, option.name, option.tooltip)
+        if option.fn then
+            CreateDropDown(category, option.key, option.name, option.fn, option.tooltip)
+        else
+            CreateCheckBox(category, option.key, option.name, option.tooltip)
+        end
     end
 
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L.OptionsTitle2))
 
     for index = 1, #L.OptionsStats do
         local option = L.OptionsStats[index]
-        CreateCheckBox(category, option.key, option.name, option.tooltip)
+        if option.fn then
+            CreateDropDown(category, option.key, option.name, option.fn, option.tooltip)
+        else
+            CreateCheckBox(category, option.key, option.name, option.tooltip)
+        end
     end
 
-    local function GetDivisionOptions()
-        local container = Settings.CreateControlTextContainer()
-        container:Add(0, "Never")
-        for index = 1, #ns.data.divisions do
-            local value = ns.data.divisions[index]
-            container:Add(index, value .. " " .. L.HonorableKills)
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L.OptionsTitle3))
+
+    for index = 1, #L.OptionsExtra do
+        local option = L.OptionsExtra[index]
+        if option.fn then
+            CreateDropDown(category, option.key, option.name, option.fn, option.tooltip)
+        else
+            CreateCheckBox(category, option.key, option.name, option.tooltip)
         end
-        return container:GetData()
     end
-    CreateDropDown(category, L.OptionsDivision.key, L.OptionsDivision.name, GetDivisionOptions, L.OptionsDivision.tooltip)
 
     ns.Settings = category
 end

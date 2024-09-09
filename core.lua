@@ -9,7 +9,6 @@ local CT = C_Timer
 
 function HonorableKillTracker_OnLoad(self)
     self:RegisterEvent("PLAYER_LOGIN")
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("CRITERIA_UPDATE")
 end
 
@@ -18,7 +17,6 @@ end
 function HonorableKillTracker_OnEvent(self, event, arg, ...)
     if event == "PLAYER_LOGIN" then
         ns:SetDefaultOptions()
-    elseif event == "PLAYER_ENTERING_WORLD" then
         ns:CreateSettingsPanel()
         if not HKT_version then
             ns:PrettyPrint(L.Install:format(ns.color, ns.version))
@@ -30,11 +28,12 @@ function HonorableKillTracker_OnEvent(self, event, arg, ...)
         if ns:OptionValue("displayOnLogin") then
             ns:Alert(true)
         end
-        self:UnregisterEvent("PLAYER_ENTERING_WORLD")
     elseif event == "CRITERIA_UPDATE" then
         ns:Alert()
     end
 end
+
+-- Addon Compartment Handling
 
 AddonCompartmentFrame:RegisterAddon({
     text = ns.title,
@@ -62,6 +61,8 @@ AddonCompartmentFrame:RegisterAddon({
     end,
 })
 
+-- Slash Command Handling
+
 SlashCmdList["HONORABLEKILLTRACKER"] = function(message)
     if message == "v" or message:match("ver") then
         -- Print the current addon version
@@ -77,3 +78,4 @@ SlashCmdList["HONORABLEKILLTRACKER"] = function(message)
     end
 end
 SLASH_HONORABLEKILLTRACKER1 = "/" .. ns.command
+SLASH_HONORABLEKILLTRACKER2 = "/hks"

@@ -3,6 +3,7 @@ local _, ns = ...
 ns.data = {
     defaults = {
         characterSpecific = false,
+        delineateCharacter = 1,
         displayDivision = 3,
         displayOnLogin = true,
         trackAchievements = true,
