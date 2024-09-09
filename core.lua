@@ -9,6 +9,7 @@ local CT = C_Timer
 
 function HonorableKillTracker_OnLoad(self)
     self:RegisterEvent("PLAYER_LOGIN")
+    self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("CRITERIA_UPDATE")
 end
 
@@ -17,6 +18,7 @@ end
 function HonorableKillTracker_OnEvent(self, event, arg, ...)
     if event == "PLAYER_LOGIN" then
         ns:SetDefaultOptions()
+    elseif event == "PLAYER_ENTERING_WORLD" then
         ns:CreateSettingsPanel()
         if not HKT_version then
             ns:PrettyPrint(L.Install:format(ns.color, ns.version))
@@ -28,6 +30,7 @@ function HonorableKillTracker_OnEvent(self, event, arg, ...)
         if ns:OptionValue("displayOnLogin") then
             ns:Alert(true)
         end
+        self:UnregisterEvent("PLAYER_ENTERING_WORLD")
     elseif event == "CRITERIA_UPDATE" then
         ns:Alert()
     end
@@ -66,6 +69,8 @@ SlashCmdList["HONORABLEKILLTRACKER"] = function(message)
     elseif message == "c" or message:match("con") or message == "o" or message:match("opt") or message == "s" or message:match("sett") or message:match("togg") then
         -- Open settings window
         ns:OpenSettings()
+    elseif message == "a" then
+        ns:Alert()
     else
         -- Print the timer
         ns:Alert(true)

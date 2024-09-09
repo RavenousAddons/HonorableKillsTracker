@@ -42,20 +42,32 @@ local function FormatWithCommas(number)
 end
 
 local function HighestAchievementIndex()
+    if ns.data.highestAchievementIndex ~= nil then
+        return ns.data.highestAchievementIndex
+    end
     local index
     for total, _ in pairs(achievements) do
         if index == nil or total > index then
             index = total
         end
     end
+    ns.data.highestAchievementIndex = tonumber(index)
     return tonumber(index)
 end
 
 local function HighestAchievementID()
-    return tonumber(achievements[HighestAchievementIndex()])
+    if ns.data.highestAchievementID ~= nil then
+        return ns.data.highestAchievementID
+    end
+    local id = tonumber(achievements[HighestAchievementIndex()])
+    ns.data.highestAchievementID = id
+    return id
 end
 
 local function CurrentAchievementIndex(warbandHKs)
+    if ns.data.currentAchievementIndex ~= nil and warbandHKs < ns.data.currentAchievementIndex then
+        return ns.data.currentAchievementIndex
+    end
     local max = HighestAchievementIndex()
     if warbandHKs >= max then
         return max
@@ -64,14 +76,20 @@ local function CurrentAchievementIndex(warbandHKs)
     local index
     for total, _ in pairs(achievements) do
         if warbandHKs < total and total < (index or max) then
-            index = total
+            index = tonumber(total)
         end
     end
-    return index and tonumber(index) or nil
+    ns.data.currentAchievementIndex = index
+    return index
 end
 
 local function CurrentAchievementID(warbandHKs)
-    return tonumber(achievements[CurrentAchievementIndex(warbandHKs)])
+    if ns.data.currentAchievementID ~= nil and ns.data.currentAchievementIndex ~= nil and warbandHKs < ns.data.currentAchievementIndex then
+        return ns.data.currentAchievementID
+    end
+    local id = tonumber(achievements[CurrentAchievementIndex(warbandHKs)])
+    ns.data.currentAchievementID = id
+    return id
 end
 
 local function AchievementLink(warbandHKs)
@@ -80,6 +98,10 @@ end
 
 local function ShouldTrackCharacterSpecific(warbandHKs)
     return ns:OptionValue("characterSpecific") or warbandHKs > HighestAchievementIndex()
+end
+
+local function DisplayDivision()
+    return ns.data.divisions[ns:OptionValue("displayDivision")]
 end
 
 local function GetChangeIndex(old, new)
@@ -111,7 +133,7 @@ local function CharacterHKs()
 end
 
 local function WarbandHKs()
-    local value = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1)):match('%d+')
+    local value = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1, true)):match('%d+')
     return tonumber(value)
 end
 
@@ -119,29 +141,45 @@ local function PrintStats(trackingType, key, honorableKills)
     print(L.HKs:format(trackingType) .. ": " .. FormatChange(FormatWithCommas(HKT_data[key] or "0"), FormatWithCommas(honorableKills)))
 end
 
+local function EqualDivision(characterHKs, warbandHKs, characterSpecific)
+    local displayDivision = DisplayDivision()
+    if displayDivision == 0 then
+        return false
+    elseif displayDivision == 1 then
+        return true
+    end
+    local x = math.fmod(characterSpecific and characterHKs or warbandHKs, displayDivision)
+    return x == 0
+end
+
+local displayLocked = false
 local function DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
-    -- Print stats based on character-specific parameter
-    local trackingType = characterSpecific and characterFormatted or warbandFormatted
-    local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
-    local honorableKills = characterSpecific and characterHKs or warbandHKs
-    PrintStats(trackingType, key, honorableKills)
-
-    -- Print stats based on opposite of character-specific parameter
-    if force then
-        trackingType = characterSpecific and warbandFormatted or characterFormatted
-        key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
-        honorableKills = characterSpecific and warbandHKs or characterHKs
+    if force or not displayLocked then
+        displayLocked = true
+        -- Print stats based on character-specific parameter
+        local trackingType = characterSpecific and characterFormatted or warbandFormatted
+        local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
+        local honorableKills = characterSpecific and characterHKs or warbandHKs
         PrintStats(trackingType, key, honorableKills)
-    end
 
-    local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
-    if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
-        print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatChange(FormatWithCommas(HKT_data.remaining or "0"), FormatWithCommas(remaining))))
-    end
+        -- Print stats based on opposite of character-specific parameter
+        if force then
+            trackingType = characterSpecific and warbandFormatted or characterFormatted
+            key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
+            honorableKills = characterSpecific and warbandHKs or characterHKs
+            PrintStats(trackingType, key, honorableKills)
+        end
 
-    HKT_data.honorableKills = warbandHKs
-    HKT_data.honorableKillsCharacter = characterHKs
-    HKT_data.remaining = remaining
+        local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
+        if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
+            print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatWithCommas(HKT_data.remaining or "0")))
+        end
+
+        HKT_data.remaining = remaining
+        C_Timer.After(1, function()
+            displayLocked = false
+        end)
+    end
 end
 
 ---
@@ -178,7 +216,11 @@ function ns:Alert(force)
     local characterHKs = CharacterHKs()
     local warbandHKs = WarbandHKs()
     local characterSpecific = ShouldTrackCharacterSpecific(warbandHKs)
-    if force or not math.fmod(characterSpecific and characterHKs or warbandHKs, ns:OptionValue("displayDivision")) then
+    local equalDivision = EqualDivision(characterHKs, warbandHKs, characterSpecific)
+    local hksHaveIncreased = characterHKs > HKT_data.honorableKillsCharacter
+    if force or (equalDivision and hksHaveIncreased) then
         DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
     end
+    HKT_data.honorableKills = warbandHKs
+    HKT_data.honorableKillsCharacter = characterHKs
 end
