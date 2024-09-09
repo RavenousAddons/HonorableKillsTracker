@@ -78,4 +78,3 @@ SlashCmdList["HONORABLEKILLTRACKER"] = function(message)
     end
 end
 SLASH_HONORABLEKILLTRACKER1 = "/" .. ns.command
-SLASH_HONORABLEKILLTRACKER2 = "/hks"

@@ -3,7 +3,7 @@
 
 ## Name: Honorable Kills Tracker
 ## Title: Honorable Kills Tracker
-## Notes: Keep track of your Honorable Kills and achievement progress.|n|n|cffbbbbbbSlash command: /hkt|r
+## Notes: Keep track of your Honorable Kills and achievement progress.|n|n|cffbbbbbbSlash command: /hks|r
 ## Author: RavenousAddons
 ## IconAtlas: BattleMaster
 
@@ -12,5 +12,6 @@
 
 ## X-License: Public Domain
 ## X-Website: https://github.com/RavenousAddons/HonorableKillsTracker
+## X-Curse-Project-ID: 1099637
 
 HonorableKillsTracker.xml
