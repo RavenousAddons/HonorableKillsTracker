@@ -47,7 +47,7 @@ local function HighestAchievementIndex()
     end
     local index
     for total, _ in pairs(achievements) do
-        if index == nil or total > index then
+        if index == nil or index < total then
             index = total
         end
     end
@@ -97,7 +97,7 @@ local function AchievementLink(warbandHKs)
 end
 
 local function ShouldTrackCharacterSpecific(warbandHKs)
-    return ns:OptionValue("characterSpecific") or warbandHKs > HighestAchievementIndex()
+    return ns:OptionValue("characterSpecific") or HighestAchievementIndex() < warbandHKs
 end
 
 local function DisplayDivision()
@@ -133,8 +133,12 @@ local function CharacterHKs()
 end
 
 local function WarbandHKs()
-    local value = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1, true)):match('%d+')
-    return tonumber(value)
+    local criteria = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1))
+    if criteria ~= nil then
+        local value = criteria:match('%d+')
+        return tonumber(value)
+    end
+    return 0
 end
 
 local function PrintStats(trackingType, key, honorableKills)
@@ -216,9 +220,7 @@ function ns:Alert(force)
     local characterHKs = CharacterHKs()
     local warbandHKs = WarbandHKs()
     local characterSpecific = ShouldTrackCharacterSpecific(warbandHKs)
-    local equalDivision = EqualDivision(characterHKs, warbandHKs, characterSpecific)
-    local hksHaveIncreased = characterHKs > HKT_data.honorableKillsCharacter
-    if force or (equalDivision and hksHaveIncreased) then
+    if force or (EqualDivision(characterHKs, warbandHKs, characterSpecific) and HKT_data.honorableKillsCharacter < characterHKs) then
         DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
     end
     HKT_data.honorableKills = warbandHKs
