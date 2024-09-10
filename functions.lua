@@ -31,10 +31,10 @@ local function RegisterDefaultOption(option, default)
 end
 
 local function FormatNumber(number)
-    local delineateCharacter = ns:OptionValue("delineateCharacter") == 2 and "." or ","
+    local thousandsSeparator = ns:OptionValue("thousandsSeparator") == 2 and "." or ","
     local formatted = tostring(number)
     while true do
-        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1" .. delineateCharacter .. "%2")
+        formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1" .. thousandsSeparator .. "%2")
         if k == 0 then
             break
         end

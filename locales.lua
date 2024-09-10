@@ -42,7 +42,7 @@ L.OptionsStats = {
     },
     [2] = {
         key = "displayDivision",
-        name = "Display stats every...",
+        name = "Display stats every",
         tooltip = "Change how often you will be alerted to progress in the number of your " .. L.HonorableKills .. ".",
         fn = function()
             local container = Settings.CreateControlTextContainer()
@@ -58,9 +58,9 @@ L.OptionsStats = {
 L.OptionsTitle3 = "Extra Options:"
 L.OptionsExtra = {
     [1] = {
-        key = "delineateCharacter",
-        name = "Number delineation",
-        tooltip = "Choose a character to delineate numbers.",
+        key = "thousandsSeparator",
+        name = "Thousands Separator",
+        tooltip = "Choose a character to separate thousands.",
         fn = function()
             local container = Settings.CreateControlTextContainer()
             container:Add(1, "1,000")
