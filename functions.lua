@@ -1,10 +1,7 @@
 local ADDON_NAME, ns = ...
 local L = ns.L
 
-local characterID = UnitGUID("player")
-local _, className, _ = UnitClass("player")
-local characterFormatted = "|cff" .. ns.data.classColors[className:lower()] .. UnitName("player") .. "-" .. GetRealmName("player") .. "|r"
-local warbandFormatted = "|cff01e2ff" .. L.WarbandWide .. "|r"
+ns.data.warbandFormatted = "|cff01e2ff" .. L.WarbandWide .. "|r"
 
 local achievements = ns.data.achievements
 local achievementsCount = #achievements
@@ -94,7 +91,7 @@ local function CurrentAchievementID(warbandHKs)
 end
 
 local function AchievementLink(warbandHKs)
-    return "|cffffffaa|Hachievement:" .. CurrentAchievementID(warbandHKs) .. ":" .. characterID .. ":0:0:0:0:0:0:0:0|h[" .. L.HKs:format(CurrentAchievementIndex(warbandHKs)) .. "]|h|r"
+    return "|cffffffaa|Hachievement:" .. CurrentAchievementID(warbandHKs) .. ":" .. ns.data.characterID .. ":0:0:0:0:0:0:0:0|h[" .. L.HKs:format(CurrentAchievementIndex(warbandHKs)) .. "]|h|r"
 end
 
 local function ShouldTrackCharacterSpecific(warbandHKs)
@@ -162,14 +159,14 @@ local function DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
     if force or not displayLocked then
         displayLocked = true
         -- Print stats based on character-specific parameter
-        local trackingType = characterSpecific and characterFormatted or warbandFormatted
+        local trackingType = characterSpecific and ns.data.characterNameFormatted or ns.data.warbandFormatted
         local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
         local honorableKills = characterSpecific and characterHKs or warbandHKs
         PrintStats(trackingType, key, honorableKills)
 
         -- Print stats based on opposite of character-specific parameter
         if force then
-            trackingType = characterSpecific and warbandFormatted or characterFormatted
+            trackingType = characterSpecific and ns.data.warbandFormatted or ns.data.characterNameFormatted
             key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
             honorableKills = characterSpecific and warbandHKs or characterHKs
             PrintStats(trackingType, key, honorableKills)
@@ -190,6 +187,15 @@ end
 ---
 -- Namespaced Functions
 ---
+
+--- Set some data about the player
+function ns:SetPlayerState()
+    ns.data.characterID = UnitGUID("player")
+    ns.data.characterName = UnitName("player") .. "-" .. GetNormalizedRealmName("player")
+    local _, className, _ = UnitClass("player")
+    ns.data.className = className
+    ns.data.characterNameFormatted = "|cff" .. ns.data.classColors[ns.data.className:lower()] .. ns.data.characterName .. "|r"
+end
 
 --- Returns an option from the options table
 function ns:OptionValue(option)
