@@ -23,7 +23,6 @@ function HonorableKillTracker_OnEvent(self, event, arg, ...)
         if not HKT_version then
             ns:PrettyPrint(L.Install:format(ns.color, ns.version))
         elseif HKT_version ~= ns.version then
-            ns:PrettyPrint(L.Update:format(ns.color, ns.version))
             -- Version-specific messages go here...
         end
         HKT_version = ns.version

@@ -18,7 +18,6 @@ L.Never = "Never"
 L.HKs = "%s " .. L.HonorableKills
 L.Version = "%s is the current version." -- ns.version
 L.Install = "Thanks for installing version |cff%1$s%2$s|r!" -- ns.color, ns.version
-L.Update = "Thanks for updating to version |cff%1$s%2$s|r!" -- ns.color, ns.version
 L.AddonCompartmentTooltip1 = "|cff" .. ns.color .. "Left-Click:|r Check " .. L.HonorableKills
 L.AddonCompartmentTooltip2 = "|cff" .. ns.color .. "Right-Click:|r Open Settings"
 L.OptionsTitle1 = "General options:"
