@@ -131,16 +131,12 @@ local function CharacterHKs()
 end
 
 local function WarbandHKs()
-    local criteria = select(9, GetAchievementCriteriaInfo(HighestAchievementID(), 1))
-    if criteria ~= nil then
-        local value = criteria:match('%d+')
-        return tonumber(value)
-    end
-    return 0
+    local _, _, _, _, _, _, _, _, quantityString = GetAchievementCriteriaInfo(HighestAchievementID(), 1)
+    return tonumber(quantityString:match("%d+"))
 end
 
-local function PrintStats(trackingType, key, honorableKills)
-    print(L.HKs:format(trackingType) .. ": " .. FormatChange(FormatNumber(HKT_data[key] or "0"), FormatNumber(honorableKills)))
+local function PrintStats(trackingType, key, honorableKills, forced)
+    print(L.HKs:format(trackingType) .. ": " .. (forced and FormatNumber(honorableKills) or FormatChange(FormatNumber(HKT_data[key] or "0"), FormatNumber(honorableKills))))
 end
 
 local function EqualDivision(characterHKs, warbandHKs, characterSpecific)
@@ -155,21 +151,21 @@ local function EqualDivision(characterHKs, warbandHKs, characterSpecific)
 end
 
 local displayLocked = false
-local function DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
-    if force or not displayLocked then
+local function DisplayStats(characterHKs, warbandHKs, characterSpecific, forced)
+    if forced or not displayLocked then
         displayLocked = true
         -- Print stats based on character-specific parameter
         local trackingType = characterSpecific and ns.data.characterNameFormatted or ns.data.warbandFormatted
         local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
         local honorableKills = characterSpecific and characterHKs or warbandHKs
-        PrintStats(trackingType, key, honorableKills)
+        PrintStats(trackingType, key, honorableKills, forced)
 
         -- Print stats based on opposite of character-specific parameter
-        if force then
+        if forced then
             trackingType = characterSpecific and ns.data.warbandFormatted or ns.data.characterNameFormatted
             key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
             honorableKills = characterSpecific and warbandHKs or characterHKs
-            PrintStats(trackingType, key, honorableKills)
+            PrintStats(trackingType, key, honorableKills, forced)
         end
 
         local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
@@ -223,12 +219,12 @@ function ns:OpenSettings()
     Settings.OpenToCategory(ns.Settings:GetID())
 end
 
-function ns:Alert(force)
+function ns:Alert(forced)
     local characterHKs = CharacterHKs()
     local warbandHKs = WarbandHKs()
     local characterSpecific = ShouldTrackCharacterSpecific(warbandHKs)
-    if force or (EqualDivision(characterHKs, warbandHKs, characterSpecific) and HKT_data.honorableKillsCharacter < characterHKs) then
-        DisplayStats(characterHKs, warbandHKs, characterSpecific, force)
+    if forced or (EqualDivision(characterHKs, warbandHKs, characterSpecific) and HKT_data.honorableKillsCharacter < characterHKs) then
+        DisplayStats(characterHKs, warbandHKs, characterSpecific, forced)
     end
     HKT_data.honorableKills = warbandHKs
     HKT_data.honorableKillsCharacter = characterHKs

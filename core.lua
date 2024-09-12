@@ -9,7 +9,6 @@ local CT = C_Timer
 
 function HonorableKillTracker_OnLoad(self)
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("CRITERIA_UPDATE")
 end
 
 -- Event Triggers
@@ -20,16 +19,19 @@ function HonorableKillTracker_OnEvent(self, event, ...)
         ns:SetPlayerState()
         ns:SetDefaultOptions()
         ns:CreateSettingsPanel()
+        if not HKT_version then
+            ns:PrettyPrint(L.Install:format(ns.color, ns.version))
+        elseif HKT_version ~= ns.version then
+            -- Version-specific messages go here...
+        end
+        HKT_version = ns.version
         if isInitialLogin then
-            if not HKT_version then
-                ns:PrettyPrint(L.Install:format(ns.color, ns.version))
-            elseif HKT_version ~= ns.version then
-                -- Version-specific messages go here...
-            end
-            HKT_version = ns.version
             if ns:OptionValue("displayOnLogin") then
-                ns:Alert(true)
+                C_Timer.After(3, function()
+                    ns:Alert(true)
+                end)
             end
+            self:RegisterEvent("CRITERIA_UPDATE")
         end
         self:UnregisterEvent("PLAYER_ENTERING_WORLD")
     elseif event == "CRITERIA_UPDATE" then
