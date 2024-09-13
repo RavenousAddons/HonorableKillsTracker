@@ -5,10 +5,13 @@ local characterID = UnitGUID("player")
 
 local CT = C_Timer
 
+local criteriaUpdateAllowed = false
+
 -- Load the Addon
 
 function HonorableKillTracker_OnLoad(self)
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("CRITERIA_UPDATE")
 end
 
 -- Event Triggers
@@ -31,11 +34,22 @@ function HonorableKillTracker_OnEvent(self, event, ...)
                     ns:Alert(true)
                 end)
             end
-            self:RegisterEvent("CRITERIA_UPDATE")
         end
+        criteriaUpdateAllowed = true
         self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+        self:RegisterEvent("LOADING_SCREEN_ENABLED")
+    elseif event == "LOADING_SCREEN_ENABLED" then
+        criteriaUpdateAllowed = false
+        self:UnregisterEvent("LOADING_SCREEN_ENABLED")
+        self:RegisterEvent("LOADING_SCREEN_DISABLED")
+    elseif event == "LOADING_SCREEN_DISABLED" then
+        criteriaUpdateAllowed = true
+        self:UnregisterEvent("LOADING_SCREEN_DISABLED")
+        self:RegisterEvent("LOADING_SCREEN_ENABLED")
     elseif event == "CRITERIA_UPDATE" then
-        ns:Alert()
+        if criteriaUpdateAllowed then
+            ns:Alert()
+        end
     end
 end
 
