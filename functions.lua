@@ -170,7 +170,7 @@ local function DisplayStats(characterHKs, warbandHKs, characterSpecific, forced)
 
         local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
         if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
-            print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatNumber(HKT_data.remaining or "0")))
+            print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatNumber(remaining or "0")))
         end
 
         HKT_data.remaining = remaining

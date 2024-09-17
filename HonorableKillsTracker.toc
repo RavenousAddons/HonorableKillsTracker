@@ -1,5 +1,9 @@
 ## Interface: 110005
-## Version: 1.0.4
+## Version: 1.0.5
+
+## TODO
+## Add HKs to Addon Compartment
+## Reinvestigate bar / broker addons display
 
 ## Name: Honorable Kills Tracker
 ## Title: Honorable Kills Tracker
