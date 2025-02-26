@@ -1,5 +1,5 @@
 ## Interface: 110100
-## Version: 1.0.6
+## Version: 1.0.7
 
 ## Name: Honorable Kills Tracker
 ## Title: Honorable Kills Tracker
@@ -7,17 +7,17 @@
 ## Author: RavenousAddons
 ## IconAtlas: BattleMaster
 
-## Category-enUS: Data Broker
-## Category-deDE: Datenbroker
-## Category-esES: Intermediario de Datos
-## Category-esMX: Intermediario de Datos
-## Category-frFR: Courtier de Données
-## Category-itIT:
-## Category-koKR:
-## Category-ptBR: Corretor de Dados
-## Category-ruRU: Посредник данных
-## Category-zhCN: 数据管理
-## Category-zhTW: 資料管理
+## Category-enUS: Other
+## Category-deDE: Anderes
+## Category-esES: Otros
+## Category-esMX: Otros
+## Category-frFR: Autre
+## Category-itIT: Altro
+## Category-koKR: 기타
+## Category-ptBR: Outro
+## Category-ruRU: Другое
+## Category-zhCN: 其它
+## Category-zhTW: 其他
 
 ## SavedVariables: HKT_version
 ## SavedVariablesPerCharacter: HKT_data, HKT_options

@@ -39,7 +39,9 @@ function HonorableKillTracker_OnEvent(self, event, ...)
     elseif event == "LOADING_SCREEN_ENABLED" then
         self:UnregisterEvent("CRITERIA_UPDATE")
     elseif event == "LOADING_SCREEN_DISABLED" then
-        self:RegisterEvent("CRITERIA_UPDATE")
+        C_Timer.After(1, function()
+            self:RegisterEvent("CRITERIA_UPDATE")
+        end)
     elseif event == "CRITERIA_UPDATE" then
         C_Timer.After(1, function()
             ns:Alert()
