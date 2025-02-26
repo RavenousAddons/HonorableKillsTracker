@@ -1,15 +1,23 @@
-## Interface: 110005
-## Version: 1.0.5
-
-## TODO
-## Add HKs to Addon Compartment
-## Reinvestigate bar / broker addons display
+## Interface: 110100
+## Version: 1.0.6
 
 ## Name: Honorable Kills Tracker
 ## Title: Honorable Kills Tracker
 ## Notes: Keep track of your Honorable Kills and achievement progress.|n|n|cffbbbbbbSlash command: /hks|r
 ## Author: RavenousAddons
 ## IconAtlas: BattleMaster
+
+## Category-enUS: Data Broker
+## Category-deDE: Datenbroker
+## Category-esES: Intermediario de Datos
+## Category-esMX: Intermediario de Datos
+## Category-frFR: Courtier de Données
+## Category-itIT:
+## Category-koKR:
+## Category-ptBR: Corretor de Dados
+## Category-ruRU: Посредник данных
+## Category-zhCN: 数据管理
+## Category-zhTW: 資料管理
 
 ## SavedVariables: HKT_version
 ## SavedVariablesPerCharacter: HKT_data, HKT_options
@@ -18,4 +26,6 @@
 ## X-Website: https://github.com/RavenousAddons/HonorableKillsTracker
 ## X-Curse-Project-ID: 1099637
 
+Libs/RavenousUtils/RavenousUtils.xml
+Libs/RavenousOptions/RavenousOptions.xml
 HonorableKillsTracker.xml

@@ -5,8 +5,6 @@ local characterID = UnitGUID("player")
 
 local CT = C_Timer
 
-local criteriaUpdateAllowed = false
-
 -- Load the Addon
 
 function HonorableKillTracker_OnLoad(self)
@@ -22,8 +20,8 @@ function HonorableKillTracker_OnEvent(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         local isInitialLogin, isReloadingUi = ...
         ns:SetPlayerState()
-        ns:SetDefaultOptions()
-        ns:CreateSettingsPanel()
+        ns:SetOptionDefaults()
+        ns:CreateSettingsPanel(HKT_options, ns.data.defaults, L.Settings, ns.name, ns.prefix, ns.version)
         if not HKT_version then
             ns:PrettyPrint(L.Install:format(ns.color, ns.version))
         elseif HKT_version ~= ns.version then
@@ -31,22 +29,21 @@ function HonorableKillTracker_OnEvent(self, event, ...)
         end
         HKT_version = ns.version
         if isInitialLogin then
-            if ns:OptionValue("displayOnLogin") then
+            if ns:OptionValue(HKT_options, "displayOnLogin") then
                 C_Timer.After(3, function()
                     ns:Alert(true)
                 end)
             end
         end
-        criteriaUpdateAllowed = true
         self:UnregisterEvent("PLAYER_ENTERING_WORLD")
     elseif event == "LOADING_SCREEN_ENABLED" then
-        criteriaUpdateAllowed = false
+        self:UnregisterEvent("CRITERIA_UPDATE")
     elseif event == "LOADING_SCREEN_DISABLED" then
-        criteriaUpdateAllowed = true
+        self:RegisterEvent("CRITERIA_UPDATE")
     elseif event == "CRITERIA_UPDATE" then
-        if criteriaUpdateAllowed then
+        C_Timer.After(1, function()
             ns:Alert()
-        end
+        end)
     end
 end
 
@@ -87,10 +84,8 @@ SlashCmdList["HONORABLEKILLTRACKER"] = function(message)
     elseif message == "c" or message:match("con") or message == "o" or message:match("opt") or message == "s" or message:match("sett") or message:match("togg") then
         -- Open settings window
         ns:OpenSettings()
-    elseif message == "a" then
-        ns:Alert()
     else
-        -- Print the timer
+        -- Print HK count
         ns:Alert(true)
     end
 end

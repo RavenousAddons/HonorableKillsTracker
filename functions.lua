@@ -4,7 +4,7 @@ local L = ns.L
 ns.data.warbandFormatted = "|cff01e2ff" .. L.WarbandWide .. "|r"
 
 local achievements = ns.data.achievements
-local achievementsCount = #achievements
+local achievementsSize = #achievements
 
 local CT = C_Timer
 local CQL = C_QuestLog
@@ -13,22 +13,8 @@ local CQL = C_QuestLog
 -- Local Functions
 ---
 
--- Set default values for options which are not yet set.
--- @param {string} option
--- @param {any} default
-local function RegisterDefaultOption(option, default)
-    if HKT_options[ns.prefix .. option] == nil then
-        if HKT_options[option] ~= nil then
-            HKT_options[ns.prefix .. option] = HKT_options[option]
-            HKT_options[option] = nil
-        else
-            HKT_options[ns.prefix .. option] = default
-        end
-    end
-end
-
 local function FormatNumber(number)
-    local thousandsSeparator = ns:OptionValue("thousandsSeparator") == 2 and "." or ","
+    local thousandsSeparator = ns:OptionValue(HKT_options, "thousandsSeparator") == 2 and "." or ","
     local formatted = tostring(number)
     while true do
         formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1" .. thousandsSeparator .. "%2")
@@ -39,67 +25,31 @@ local function FormatNumber(number)
     return formatted
 end
 
-local function HighestAchievementIndex()
-    if ns.data.highestAchievementIndex ~= nil then
-        return ns.data.highestAchievementIndex
-    end
-    local index
-    for total, _ in pairs(achievements) do
-        if index == nil or index < total then
-            index = total
+local function GetAchievementData()
+    -- if ns.data.achievementData ~= nil then
+    --     return ns.data.achievementData
+    -- end
+
+    local data = {}
+
+    local previousReqQuantity = 0
+    for i = 1, achievementsSize do
+        local _, _, _, quantity, reqQuantity = GetAchievementCriteriaInfo(achievements[i], 1)
+        if quantity < reqQuantity and quantity > previousReqQuantity then
+            data.id = achievements[i]
+            data.quantity = quantity
+            data.reqQuantity = reqQuantity
+            previousReqQuantity = reqQuantity
         end
     end
-    ns.data.highestAchievementIndex = tonumber(index)
-    return tonumber(index)
+
+    ns.data.achievementData = data
+    return data
 end
 
-local function HighestAchievementID()
-    if ns.data.highestAchievementID ~= nil then
-        return ns.data.highestAchievementID
-    end
-    local id = tonumber(achievements[HighestAchievementIndex()])
-    ns.data.highestAchievementID = id
-    return id
-end
-
-local function CurrentAchievementIndex(warbandHKs)
-    if ns.data.currentAchievementIndex ~= nil and warbandHKs < ns.data.currentAchievementIndex then
-        return ns.data.currentAchievementIndex
-    end
-    local max = HighestAchievementIndex()
-    if warbandHKs >= max then
-        return max
-    end
-
-    local index
-    for total, _ in pairs(achievements) do
-        if warbandHKs < total and total < (index or max) then
-            index = tonumber(total)
-        end
-    end
-    ns.data.currentAchievementIndex = index
-    return index
-end
-
-local function CurrentAchievementID(warbandHKs)
-    if ns.data.currentAchievementID ~= nil and ns.data.currentAchievementIndex ~= nil and warbandHKs < ns.data.currentAchievementIndex then
-        return ns.data.currentAchievementID
-    end
-    local id = tonumber(achievements[CurrentAchievementIndex(warbandHKs)])
-    ns.data.currentAchievementID = id
-    return id
-end
-
-local function AchievementLink(warbandHKs)
-    return "|cffffffaa|Hachievement:" .. CurrentAchievementID(warbandHKs) .. ":" .. ns.data.characterID .. ":0:0:0:0:0:0:0:0|h[" .. L.HKs:format(CurrentAchievementIndex(warbandHKs)) .. "]|h|r"
-end
-
-local function ShouldTrackCharacterSpecific(warbandHKs)
-    return ns:OptionValue("characterSpecific") or HighestAchievementIndex() < warbandHKs
-end
-
-local function DisplayDivision()
-    return ns.data.divisions[ns:OptionValue("displayDivision")]
+local function ShouldTrackCharacterSpecific()
+    local achievementData = GetAchievementData()
+    return ns:OptionValue(HKT_options, "characterSpecific") or achievementData.id == nil
 end
 
 local function GetChangeIndex(old, new)
@@ -125,22 +75,22 @@ local function FormatChange(old, new)
     return left .. "|cff44ff44" .. right .. "|r"
 end
 
+local function PrintStats(trackingType, key, honorableKills, forced)
+    print(L.HKs:format(trackingType) .. ": " .. (forced and FormatNumber(honorableKills) or FormatChange(FormatNumber(HKT_data[key] or "0"), FormatNumber(honorableKills))))
+end
+
 local function CharacterHKs()
     local value = GetStatistic(ns.data.statistic)
     return value and tonumber(value) or 0
 end
 
 local function WarbandHKs()
-    local _, _, _, _, _, _, _, _, quantityString = GetAchievementCriteriaInfo(HighestAchievementID(), 1)
-    return tonumber(quantityString:match("%d+"))
+    local achievementData = GetAchievementData()
+    return achievementData.quantity
 end
 
-local function PrintStats(trackingType, key, honorableKills, forced)
-    print(L.HKs:format(trackingType) .. ": " .. (forced and FormatNumber(honorableKills) or FormatChange(FormatNumber(HKT_data[key] or "0"), FormatNumber(honorableKills))))
-end
-
-local function EqualDivision(characterHKs, warbandHKs, characterSpecific)
-    local displayDivision = DisplayDivision()
+local function MatchesDivision(characterHKs, warbandHKs, characterSpecific)
+    local displayDivision = ns.data.divisions[ns:OptionValue(HKT_options, "displayDivision")]
     if displayDivision == 0 then
         return false
     elseif displayDivision == 1 then
@@ -150,39 +100,63 @@ local function EqualDivision(characterHKs, warbandHKs, characterSpecific)
     return x == 0
 end
 
+local function AchievementLink()
+    local achievementData = GetAchievementData()
+    return "|cffffffaa|Hachievement:" .. achievementData.id .. ":" .. ns.data.characterID .. ":0:0:0:0:0:0:0:0|h[" .. L.HKs:format(achievementData.reqQuantity) .. "]|h|r"
+end
+
 local displayLocked = false
 local function DisplayStats(characterHKs, warbandHKs, characterSpecific, forced)
-    if forced or not displayLocked then
-        displayLocked = true
-        -- Print stats based on character-specific parameter
-        local trackingType = characterSpecific and ns.data.characterNameFormatted or ns.data.warbandFormatted
-        local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
-        local honorableKills = characterSpecific and characterHKs or warbandHKs
-        PrintStats(trackingType, key, honorableKills, forced)
-
-        -- Print stats based on opposite of character-specific parameter
-        if forced then
-            trackingType = characterSpecific and ns.data.warbandFormatted or ns.data.characterNameFormatted
-            key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
-            honorableKills = characterSpecific and warbandHKs or characterHKs
-            PrintStats(trackingType, key, honorableKills, forced)
-        end
-
-        local remaining = CurrentAchievementIndex(warbandHKs) - warbandHKs
-        if ns:OptionValue("trackAchievements") and warbandHKs < HighestAchievementIndex() then
-            print(AchievementLink(warbandHKs) .. " " .. L.Remaining:format(FormatNumber(remaining or "0")))
-        end
-
-        HKT_data.remaining = remaining
-        C_Timer.After(1, function()
-            displayLocked = false
-        end)
+    if displayLocked and not forced then
+        return
     end
+    displayLocked = true
+
+    -- Print stats based on character-specific parameter
+    local trackingType = characterSpecific and ns.data.characterNameFormatted or ns.data.warbandFormatted
+    local key = characterSpecific and "honorableKillsCharacter" or "honorableKills"
+    local honorableKills = characterSpecific and characterHKs or warbandHKs
+    PrintStats(trackingType, key, honorableKills, forced)
+
+    -- Print stats based on opposite of character-specific parameter
+    if forced and ns.data.achievementData.quantity then
+        trackingType = characterSpecific and ns.data.warbandFormatted or ns.data.characterNameFormatted
+        key = characterSpecific and "honorableKills" or "honorableKillsCharacter"
+        honorableKills = characterSpecific and warbandHKs or characterHKs
+        PrintStats(trackingType, key, honorableKills, forced)
+    end
+
+    local achievementData = GetAchievementData()
+    if ns:OptionValue(HKT_options, "trackAchievements") and achievementData.reqQuantity and warbandHKs < achievementData.reqQuantity then
+        local remaining = achievementData.reqQuantity - warbandHKs
+        print(AchievementLink() .. " " .. L.Remaining:format(FormatNumber(remaining or "0")))
+    end
+
+    C_Timer.After(1, function()
+        displayLocked = false
+    end)
 end
 
 ---
 -- Namespaced Functions
 ---
+
+--- Returns an option from the options table
+-- @param {boolean} forced
+function ns:Alert(forced)
+    C_Timer.After(0, function()
+        local characterSpecific = ShouldTrackCharacterSpecific()
+        local characterHKs = CharacterHKs()
+        local warbandHKs = WarbandHKs()
+
+        if forced or (MatchesDivision(characterHKs, warbandHKs, characterSpecific) and HKT_data.honorableKillsCharacter < characterHKs) then
+            DisplayStats(characterHKs, warbandHKs, characterSpecific, forced)
+        end
+
+        HKT_data.honorableKills = warbandHKs
+        HKT_data.honorableKillsCharacter = characterHKs
+    end)
+end
 
 --- Set some data about the player
 function ns:SetPlayerState()
@@ -193,39 +167,11 @@ function ns:SetPlayerState()
     ns.data.characterNameFormatted = "|cff" .. ns.data.classColors[ns.data.className:lower()] .. ns.data.characterName .. "|r"
 end
 
---- Returns an option from the options table
-function ns:OptionValue(option)
-    return HKT_options[ns.prefix .. option]
-end
-
 --- Sets default options if they are not already set
-function ns:SetDefaultOptions()
+function ns:SetOptionDefaults()
     HKT_data = HKT_data or {}
     HKT_options = HKT_options or {}
     for option, default in pairs(ns.data.defaults) do
-        RegisterDefaultOption(option, default)
+        ns:SetOptionDefault(HKT_options, option, default)
     end
-end
-
---- Prints a formatted message to the chat
--- @param {string} message
-function ns:PrettyPrint(message)
-    DEFAULT_CHAT_FRAME:AddMessage("|cff" .. ns.color .. ns.name .. "|r " .. message)
-end
-
---- Opens the Addon settings menu and plays a sound
-function ns:OpenSettings()
-    PlaySound(SOUNDKIT.IG_MAINMENU_OPEN)
-    Settings.OpenToCategory(ns.Settings:GetID())
-end
-
-function ns:Alert(forced)
-    local characterHKs = CharacterHKs()
-    local warbandHKs = WarbandHKs()
-    local characterSpecific = ShouldTrackCharacterSpecific(warbandHKs)
-    if forced or (EqualDivision(characterHKs, warbandHKs, characterSpecific) and HKT_data.honorableKillsCharacter < characterHKs) then
-        DisplayStats(characterHKs, warbandHKs, characterSpecific, forced)
-    end
-    HKT_data.honorableKills = warbandHKs
-    HKT_data.honorableKillsCharacter = characterHKs
 end

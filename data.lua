@@ -2,14 +2,13 @@ local _, ns = ...
 
 ns.data = {
     defaults = {
-        characterSpecific = false,
-        thousandsSeparator = 1,
-        displayDivision = 3,
-        displayOnLogin = true,
         trackAchievements = true,
+        characterSpecific = false,
+        displayOnLogin = true,
+        displayDivision = 3,
+        thousandsSeparator = 1,
     },
     divisions = {
-        [0] = 0,
         [1] = 1,
         [2] = 5,
         [3] = 10,
@@ -21,16 +20,15 @@ ns.data = {
         [9] = 1000,
     },
     achievements = {
-        [1] = 238,
-        [100] = 513,
-        [500] = 515,
-        [1000] = 516,
-        [5000] = 512,
-        [10000] = 509,
-        [25000] = 539,
-        [50000] = 869,
-        [100000] = 870,
-        [250000] = 5363,
+        [1] = 513,  -- 100
+        [2] = 515,  -- 500
+        [3] = 516,  -- 1000
+        [4] = 512,  -- 5000
+        [5] = 509,  -- 10000
+        [6] = 239,  -- 25000
+        [7] = 869,  -- 50000
+        [8] = 870,  -- 100000
+        [9] = 5363, -- 250000
     },
     statistic = 588,
     classColors = {
